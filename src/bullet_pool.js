@@ -20,6 +20,9 @@ function BulletPool(maxSize) {
   this.pool = new Float32Array(4 * maxSize);
   this.end = 0;
   this.max = maxSize;
+  
+  this.bullets = [];
+  this.bulletSpeed = 7;
 }
 
 /**
@@ -36,6 +39,8 @@ BulletPool.prototype.add = function(position, velocity) {
     this.pool[4*this.end+2] = velocity.x;
     this.pool[4*this.end+3] = velocity.y;
     this.end++;
+	
+	this. bullets.push(position);
   }
 }
 
@@ -75,6 +80,17 @@ BulletPool.prototype.update = function(elapsedTime, callback) {
       i--;
     }
   }
+  
+  for (var i = 0 ; i < this.bullets.length ; i ++)
+  {
+	  this.bullets[i].y -= this.bulletSpeed;
+	  
+	  if (false)
+	  {
+		  this.bullets.splice(i,1);
+		  i--;
+	  }
+  }
 }
 
 /**
@@ -87,7 +103,7 @@ BulletPool.prototype.render = function(elapsedTime, ctx) {
   // Render the bullets as a single path
   ctx.save();
   ctx.beginPath();
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "yellow";
   for(var i = 0; i < this.end; i++) {
     ctx.moveTo(this.pool[4*i], this.pool[4*i+1]);
     ctx.arc(this.pool[4*i], this.pool[4*i+1], 2, 0, 2*Math.PI);

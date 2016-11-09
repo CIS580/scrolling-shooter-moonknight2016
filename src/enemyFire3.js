@@ -10,48 +10,48 @@ const Bomb = require('./bomb');
 //const Bomb = require('./missile');
 
 /* Constants */
-const PLAYER_SPEED = 7;
+const EnemyFire3_SPEED = 8;
 const BULLET_SPEED = 9;
 
 /**
  * @module Player
  * A class representing a player's helicopter
  */
-module.exports = exports = Player;
+module.exports = exports = EnemyFire3;
 
 /**
  * @constructor Player
  * Creates a player
  * @param {BulletPool} bullets the bullet pool
  */
-function Player(bullets, missiles,bombs) {
-  this.missiles = missiles;
-  this.missileCount = 40;
+function EnemyFire3( position) {
+  //this.missiles = missiles;
+  this.missileCount = 4;
   
   this.lazerCount = 0;
   
-  this.bombs = bombs;
+  //this.bombs = bombs;
   this.bombCount = 10;
   
-  this.bullets = bullets;
+  //this.bullets = bullets;
   this.angle = 0;
-  this.position = {x: 500, y: 600};
+  this.position = position;
   this.velocity = {x: 0, y: 0};
   this.img = new Image()
-  this.img.src = 'assets/tyrian.shp.007D3C.png';
-  this.width  = 23; 
-  this.height = 27;
+  this.img.src = 'assets/newsh5.shp.000000.png';
+  this.width  = 32; 
+  this.height = 64;
   
-  this.health = 5;
+  this.health = 50;
   this.hitTimer = 0;
   this.explodingTimer = 0;
   this.explosionParticles = new ExplosionParticles(400);
   
-  this.bullets2 = [];
+  this.movementTimer = 0;
+  this.dir = 1;
   
+  //this.state = "normal";
   this.state = "normal";
-  
-  this.deaths = 0;
 }
 
 /**
@@ -61,12 +61,12 @@ function Player(bullets, missiles,bombs) {
  * @param {Input} input object defining input, must have
  * boolean properties: up, left, right, down
  */
-Player.prototype.update = function(elapsedTime, input) {
+EnemyFire3.prototype.update = function(elapsedTime) {
 
   
   
   
-  //
+  /*
   switch(this.state)
   {
 	  case "hitInv":
@@ -99,15 +99,12 @@ Player.prototype.update = function(elapsedTime, input) {
 	  if(this.position.x > 1024) this.position.x = 1024;
 	  if(this.position.y > 786) this.position.y = 786;
 	  
-	  for(var i = 0; i < this.bullets2.length; i++) {
-		this.bullets2[i].y-=4;
-		}
 	  
 	  break;
 	  
 	  case "exploding":
 	  this.explodingTimer++;
-	  //console.log(this.position);
+	  console.log(this.position);
 	  this.explosionParticles.emit(this.position);
 	  this.explosionParticles.update(elapsedTime);
 	  if (this.explodingTimer>65)
@@ -119,7 +116,43 @@ Player.prototype.update = function(elapsedTime, input) {
 	  }
 	  break
 	  
+  }*/
+  
+  //this.position.x += EnemyFire3_SPEED;
+  switch (this.state)
+  {
+	  case "normal":
+	  this.position.y += EnemyFire3_SPEED;
+	  this.movementTimer++;
+	  if (this.movementTimer > 40 )
+	  {
+		  this.movementTimer = 0;
+		  if (this.dir == -1)
+			  this.dir = 1 
+		  else 
+			  this.dir = -1;
+	  }
+	  if (this.dir == 1)
+		  this.position.x += 0;//EnemyFire3_SPEED;
+	  else 
+		  this.position.x -= 0//EnemyFire3_SPEED;
+	  break;
+	  case "exploding":
+	  this.explodingTimer++;
+	  //console.log(this.position);
+	  this.explosionParticles.emit(this.position);
+	  this.explosionParticles.update(elapsedTime);
+	  
+	  if (this.explodingTimer>65)
+	  {
+		  this.explodingTimer =0;
+		  this.state = "dead";
+		  
+		  //this.health = 5;
+	  }
+	  break;
   }
+  
   
 }
 
@@ -129,7 +162,7 @@ Player.prototype.update = function(elapsedTime, input) {
  * @param {DOMHighResTimeStamp} elapsedTime
  * @param {CanvasRenderingContext2D} ctx
  */
-Player.prototype.render = function(elapasedTime, ctx) {
+EnemyFire3.prototype.render = function(elapasedTime, ctx) {
   var offset = this.angle * 23;
   ctx.save();
   ctx.translate(this.position.x, this.position.y);
@@ -146,23 +179,9 @@ Player.prototype.render = function(elapasedTime, ctx) {
 	  this.explosionParticles.render(elapasedTime, ctx);
 	  break;
 	  case "normal":
-	  ctx.drawImage(this.img, 48+offset, 57, 23, 27, -12.5, -12, 23, 27);
-  }
-  
-  
-  //
-  ctx.restore();
-  
-  
-  
-  ctx.restore();
-  
-  ctx.save();
-  ctx.beginPath();
-  ctx.fillStyle = "yellow";
-  //ctx.translate(this.position.x, this.position.y);
-  for(var i = 0; i < this.bullets2.length; i++) {
-    ctx.fillRect(this.bullets2[i].x,this.bullets2[i].y,2,2);
+	  
+	  //ctx.drawImage(this.img, 48+offset, 57, 23, 27, -12.5, -12, 23, 27);
+	  ctx.drawImage(this.img, 146, 139, 19, 58, 0, -4, 32, 64)
   }
   
   ctx.restore();
@@ -173,16 +192,10 @@ Player.prototype.render = function(elapasedTime, ctx) {
  * Fires a bullet
  * @param {Vector} direction
  */
-Player.prototype.fireBullet = function(direction) {
+EnemyFire3.prototype.fireBullet = function(direction) {
   var position = Vector.add(this.position, {x:0, y:0});
   var velocity = {x:0 , y: -BULLET_SPEED}//Vector.scale(Vector.normalize(direction), BULLET_SPEED);
   this.bullets.add(position, velocity);
-}
-
-
-Player.prototype.fireBullet2 = function() {
-  var position = {x : this.position.x, y: this.position.y }; 
-  this.bullets2.push(position);
 }
 
 /**
@@ -190,53 +203,24 @@ Player.prototype.fireBullet2 = function() {
  * Fires a missile, if the player still has missiles
  * to fire.
  */
+
+
  
- Player.prototype.removeBullet = function() {
-  
-}
-Player.prototype.fireMissile = function() {
-  if(this.missileCount > 0){
-    var position = Vector.add(this.position, {x:0, y:0})
-    var missile = new Missile(position);
-    this.missiles.push(missile);
-    this.missileCount--;
-  }
-}
-
-Player.prototype.throwBomb = function() {
-  if(this.bombCount > 0){
-    var position = Vector.add(this.position, {x:0, y:0})
-    var bomb = new Bomb(position);
-    this.bombs.push(bomb);
-    this.bombCount--;
-  }
-}
-
-Player.prototype.takeHit = function()
-{
-	if (this.state =="normal")
-	{
-	this.state = "hitInv";
-	this.health--;
-	if (this.health<1)
-		this.die();
-	}
-	
-}
-
-Player.prototype.die = function()
-{
-	this.explosionParticles = new ExplosionParticles(400);
-	this.explosionParticles.radius = 20;
-	this.randomSize = "yes";
-	this.state = "exploding";
-	this.deaths++;
-	//this.health--;
-}
-
-Player.prototype.addBullet = function(){
-	
-var pos = {x: this.position.x-1, y:this.position.y-11};
-	this.bullets2.push(pos);
-	console.log(this.bullets2.length);
-}
+ EnemyFire3.prototype.hurt = function( )
+ {
+	 
+	 this.health--;
+	 if (this.health < 1)
+		 this.state = "exploding";
+ }
+ 
+ EnemyFire3.prototype.drop  = function( )
+ {
+	 var drop = {x:0 ,y:0, drop: "nothing"};
+	 var i = Math.floor(Math.random()*100)%5;
+	 
+	 if (i<3)
+		 drop = {x:this.position.x ,y:this.position.y, drop:"Missile"};
+	 
+	 return drop 
+ }

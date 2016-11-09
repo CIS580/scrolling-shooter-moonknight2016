@@ -28,6 +28,8 @@ function Camera(screen) {
  */
 Camera.prototype.update = function(target) {
   // TODO: Align camera with player
+  
+   this.x = target.x - 200;
 }
 
 /**
